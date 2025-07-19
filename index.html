@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-SQL Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .headers-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .headers-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .sql-query {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #c53030;
+        }
+
+        .example-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .example-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .example-question {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .example-headers {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .question-input {
+                min-height: 100px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Text-to-SQL Converter</h1>
+            <p>Transform your natural language questions into SQL queries instantly</p>
+        </div>
+
+        <div class="input-section">
+            <form id="sqlForm">
+                <div class="form-group">
+                    <label for="question">Your Question:</label>
+                    <textarea 
+                        id="question" 
+                        class="question-input" 
+                        placeholder="e.g., How many employees are older than 30?"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="headers">Table Headers (comma-separated):</label>
+                    <input 
+                        type="text" 
+                        id="headers" 
+                        class="headers-input" 
+                        placeholder="e.g., id, name, age, department, salary"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Generate SQL Query
+                </button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating SQL query...</p>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="result-card">
+                <div class="result-title">Generated SQL Query:</div>
+                <div class="sql-query" id="sqlResult"></div>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">💡 Example Questions:</div>
+            <div class="example-item">
+                <div class="example-question">"How many employees are older than 30?"</div>
+                <div class="example-headers">Headers: id, name, age, department, salary</div>
+            </div>
+            <div class="example-item">
+                <div class="example-question">"Show all employees in the IT department"</div>
+                <div class="example-headers">Headers: id, name, age, department, salary</div>
+            </div>
+            <div class="example-item">
+                <div class="example-question">"What is the average salary by department?"</div>
+                <div class="example-headers">Headers: id, name, age, department, salary</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('sqlForm');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const sqlResult = document.getElementById('sqlResult');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const question = document.getElementById('question').value.trim();
+            const headers = document.getElementById('headers').value.trim();
+            
+            if (!question || !headers) {
+                alert('Please fill in both question and table headers');
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            submitBtn.disabled = true;
+
+            try {
+                const tableHeaders = headers.split(',').map(h => h.trim());
+                
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        table_headers: tableHeaders
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    sqlResult.textContent = data.sql_query;
+                    resultSection.style.display = 'block';
+                } else {
+                    throw new Error(data.detail || 'Failed to generate SQL query');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                sqlResult.textContent = `Error: ${error.message}`;
+                resultSection.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Add click handlers for examples
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const question = item.querySelector('.example-question').textContent.replace(/"/g, '');
+                const headers = item.querySelector('.example-headers').textContent.replace('Headers: ', '');
+                
+                document.getElementById('question').value = question;
+                document.getElementById('headers').value = headers;
+            });
+        });
+    </script>
+</body>
+</html> 
