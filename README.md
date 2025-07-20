@@ -1,6 +1,6 @@
 # Text-to-SQL Converter - Render.com Deployment
 
-## Quick Deploy to Render.com
+## Deploy to Render.com
 
 ### Prerequisites
 - Create a free account at [https://render.com](https://render.com)
@@ -15,7 +15,7 @@
      git init
      git add .
      git commit -m "Initial Render deployment"
-     git remote add origin <your-repo-url>
+     git remote add origin <>
      git push -u origin main
      ```
 
@@ -28,15 +28,11 @@
 5. **Configure the service:**
    - **Environment:** Python
    - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn app:app --host 0.0.0.0 --port 10000`
-   - **(Optional) Add environment variable:** `PYTHON_VERSION=3.9.18`
-   - **(Optional) Use `render.yaml` for auto config**
+   - **Start Command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
 
-6. **Click 'Create Web Service'**
+6. **Wait for build and deployment to finish**
 
-7. **Wait for build and deployment to finish**
-
-8. **Open your app using the provided URL!**
+7. **Open your app using the provided URL!**
 
 ## API Endpoints
 - `/` - Web interface
